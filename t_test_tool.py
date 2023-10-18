@@ -39,15 +39,15 @@ def t_test(x1, x2, n1, n2, s1, s2):
 def main():
     st.title("Two-Sample T-test Calculator with Variance Check")
     
-    x1 = st.number_input("Enter mean for Group A:", value=0.0)
-    n1 = st.number_input("Enter number of observations for Group A:", value=30)
-    s1 = st.number_input("Enter standard deviation for Group A:", value=1.0)
+    x1 = st.number_input("A组均值:", value=0.0)
+    n1 = st.number_input("A组样本量:", value=30)
+    s1 = st.number_input("A组方差:", value=1.0)
 
-    x2 = st.number_input("Enter mean for Group B:", value=0.0)
-    n2 = st.number_input("Enter number of observations for Group B:", value=30)
-    s2 = st.number_input("Enter standard deviation for Group B:", value=1.0)
+    x2 = st.number_input("B组均值:", value=0.0)
+    n2 = st.number_input("B组样本量:", value=30)
+    s2 = st.number_input("B组方差:", value=1.0)
 
-    if st.button("Calculate"):
+    if st.button("C计算 "):
         t_test(x1, x2, n1, n2, s1, s2)
 
 if __name__ == "__main__":
