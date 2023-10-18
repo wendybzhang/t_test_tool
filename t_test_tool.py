@@ -47,7 +47,7 @@ def main():
     n2 = st.number_input("B组样本量:", value=30)
     s2 = st.number_input("B组方差:", value=1.0)
 
-    if st.button("C计算 "):
+    if st.button("计算"):
         t_test(x1, x2, n1, n2, s1, s2)
 
 if __name__ == "__main__":
