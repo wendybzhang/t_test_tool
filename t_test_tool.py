@@ -1,40 +1,34 @@
-import streamlit as st
 import numpy as np
-from scipy.stats import t, ttest_ind_from_stats
+from scipy import stats
 
-def t_test_from_stats(mean1, mean2, std1, std2, nobs1, nobs2):
-    # Calculate the t statistic and degree of freedom using the given statistics
-    t_stat, df = ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2, equal_var=False)
+def t_test(x1, x2, n1, n2, s1, s2):
+    F = max(s1, s2) / min(s1, s2)
+    Fp = 1 - stats.f.cdf(F, n1-1, n2-1)
     
-    # Calculate the critical value for 95% confidence interval
-    crit_value = t.ppf(0.975, df)
-    
-    # Calculate the standard error
-    se = np.sqrt((std1**2/nobs1) + (std2**2/nobs2))
-    
-    # Calculate the confidence interval
-    moe = crit_value * se
-    ci_low, ci_high = (mean1 - mean2) - moe, (mean1 - mean2) + moe
-    
-    return t_stat, df, ci_low, ci_high
+    if Fp > 0.05:
+        sc = np.sqrt((1/n1 + 1/n2) * ((n1-1)*s1 + (n2-1)*s2) / (n1 + n2 - 2))
+        t = abs(x2 - x1) / sc
+        df = n1 + n2 - 2
+        p = 2 * (1 - stats.t.cdf(t, df))
+        if p < 0.05:
+            min_x1_x2 = x1 - x2 - stats.t.ppf(0.975, df) * sc
+            max_x1_x2 = x1 - x2 + stats.t.ppf(0.975, df) * sc
+            print(f"AB两组通过方差齐性检验(方差相等)，且AB两组均值具有显著差异，p值 = {p}；AB两组差异的95%置信区间delta落在：[{min_x1_x2}, {max_x1_x2}]")
+        else:
+            print(f"AB两组通过方差齐性检验(方差相等)，但是AB两组没有显著差异，p值 = {p}")
+    else:
+        sc2 = np.sqrt(s1/n1 + s2/n2)
+        t2 = abs(x2 - x1) / sc2
+        df2 = (s1/n1 + s2/n2)**2 / (((s1/n1)**2) / (n1-1) + ((s2/n2)**2) / (n2-1))
+        p2 = 2 * (1 - stats.t.cdf(t2, df2))
+        if p2 < 0.05:
+            print(f"AB两组没有通过方差齐性检验(方差不等)，F检验的p值 = {Fp}；下面是使用welch-T检验的结果：")
+            min_x1_x2_2 = x1 - x2 - stats.t.ppf(0.975, df2) * sc2
+            max_x1_x2_2 = x1 - x2 + stats.t.ppf(0.975, df2) * sc2
+            print(f"AB两组均值具有显著差异，p值 = {p2}; AB两组差异的95%置信区间delta落在：[{min_x1_x2_2}, {max_x1_x2_2}]")
+        else:
+            print(f"AB两组没有通过方差齐性检验，F检验的p值 = {Fp}；下面是使用welch-T检验的结果：")
+            print(f"AB两组均值没有显著差异，p值 = {p2}")
 
-def main():
-    st.title("双样本T检验计算器")
-    
-    mean1 = st.number_input("请输入第一组的均值:", value=0.0)
-    nobs1 = st.number_input("请输入第一组的观测值数量:", value=30)
-    std1 = st.number_input("请输入第一组的标准偏差:", value=1.0)
-
-    mean2 = st.number_input("请输入第二组的均值:", value=0.0)
-    nobs2 = st.number_input("请输入第二组的观测值数量:", value=30)
-    std2 = st.number_input("请输入第二组的标准偏差:", value=1.0)
-
-    if st.button("计算"):
-        t_stat, df, ci_low, ci_high = t_test_from_stats(mean1, mean2, std1, std2, nobs1, nobs2)
-        
-        st.write(f"T 统计量: {t_stat:.2f}")
-        st.write(f"自由度: {df:.2f}")
-        st.write(f"均值差异的95%置信区间: ({ci_low:.2f}, {ci_high:.2f})")
-        
-if __name__ == "__main__":
-    main()
+# Example
+# t_test(x1=3, x2=5, n1=100, n2=110, s1=2, s2=2.2)
